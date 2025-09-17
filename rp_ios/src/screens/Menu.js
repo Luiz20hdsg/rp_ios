@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { globalStyles } from '../styles/globalStyles';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getCompanyData } from '../api/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AdModal from '../components/AdModal';
 
 const { width, height } = Dimensions.get('window');
 
 const Menu = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [companyData, setCompanyData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdVisible, setAdVisible] = useState(false);
 
   useEffect(() => {
     const fetchCompanyData = async () => {
@@ -20,6 +23,8 @@ const Menu = ({ navigation }) => {
         console.error('Erro ao buscar dados da empresa:', error);
       } finally {
         setLoading(false);
+        // Show the ad once everything is loaded
+        setAdVisible(true);
       }
     };
 
@@ -29,80 +34,70 @@ const Menu = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#A1C014" />
+        <ActivityIndicator size="large" color="#19b954" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={[globalStyles.container, { flex: 1, margin: 0, padding: 0, backgroundColor: companyData?.primaryColor }]}>
-      {companyData && (
-        <WebView
-          source={{ uri: companyData.whiteLabelUrl }}
-          style={[styles.webview, { backgroundColor: companyData?.tertiaryColor }]}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          thirdPartyCookiesEnabled={true}
-          sharedCookiesEnabled={true}
-          cacheEnabled={true}
-          startInLoadingState={true}
-          automaticallyAdjustContentInsets={false}
-          scalesPageToFit={true}
-          mixedContentMode="compatibility"
-          allowsInlineMediaPlayback={true}
-          allowsFullscreenVideo={true}
-        />
-      )}
-      <View style={styles.footer}>
-        {companyData && <Image source={{ uri: companyData.image2.replace(/'/g, '') }} style={styles.sublogo} />}
+    <SafeAreaView style={[styles.fullScreenWrapper, { backgroundColor: '#000' }]}>
+      <WebView
+        source={{ uri: "https://araspapremiada.com/" }}
+        style={[styles.webview, { backgroundColor: '#fff' }]}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        thirdPartyCookiesEnabled={true}
+        sharedCookiesEnabled={true}
+        cacheEnabled={true}
+        startInLoadingState={true}
+        automaticallyAdjustContentInsets={false}
+        scalesPageToFit={true}
+        mixedContentMode="compatibility"
+        allowsInlineMediaPlayback={true}
+        allowsFullscreenVideo={true}
+      />
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+        <Image source={require('../assets/logo_raspa.png')} style={styles.sublogo} />
         <View style={styles.footerIcons}>
-          <View style={[styles.footerButton, { backgroundColor: companyData?.secondaryColor, borderColor: companyData?.secondaryColor }]}>
-            <Ionicons name="menu" size={width * 0.055} color={companyData?.primaryColor} />
+          <View style={[styles.footerButton, { backgroundColor: '#19b954', borderColor: '#19b954' }]}>
+            <Icon name="menu" size={width * 0.055} color={'#000'} />
           </View>
-          <View style={[styles.footerButton, { borderColor: companyData?.secondaryColor }]}>
-            <Ionicons
+          <View style={[styles.footerButton, { borderColor: '#19b954' }]}>
+            <Icon
               name="notifications"
               size={width * 0.055}
-              color={companyData?.tertiaryColor}
+              color={'#fff'}
               onPress={() => navigation.navigate('MessageList')}
-            />
-          </View>
-          <View style={[styles.footerButton, { borderColor: companyData?.secondaryColor }]}>
-            <Ionicons
-              name="settings"
-              size={width * 0.055}
-              color={companyData?.tertiaryColor}
-              onPress={() => navigation.navigate('Settings')}
             />
           </View>
         </View>
       </View>
+      <AdModal isVisible={isAdVisible} onClose={() => setAdVisible(false)} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  fullScreenWrapper: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
   webview: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height * 0.11,
-    backgroundColor: '#2E2E2E',
+    height: height * 0.10,
+    backgroundColor: '#111827',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: width * 0.025,
   },
   sublogo: {
-    width: width * 0.12,
-    height: height * 0.06,
+    width: width * 0.25,
+    height: height * 0.10,
     resizeMode: 'contain',
   },
   footerIcons: {
@@ -112,9 +107,9 @@ const styles = StyleSheet.create({
   footerButton: {
     width: width * 0.12,
     height: width * 0.12,
-    backgroundColor: '#2E2E2E',
+    backgroundColor: '#111827',
     borderWidth: 1,
-    borderColor: '#A1C014',
+    borderColor: '#19b954',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',

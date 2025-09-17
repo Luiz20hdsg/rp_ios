@@ -1,25 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import { markMessageAsRead } from '../api/api';
 
 const { width } = Dimensions.get('window');
 
-const MessageItem = ({ message, onUpdate }) => {
-  const [isRead, setIsRead] = useState(message.readed);
-
-  const handleUpdate = async () => {
-    if (isRead) return; // Evita chamadas redundantes
-    try {
-      await markMessageAsRead(message.id);
-      setIsRead(true);
-      onUpdate();
-    } catch (error) {
-      console.error('Erro ao marcar mensagem como lida:', error);
-    }
-  };
+const MessageItem = ({ message, onPress }) => {
+  const isRead = message.readed;
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{message.title}</Text>
         <Text style={styles.message} numberOfLines={3} ellipsizeMode="tail">
@@ -27,16 +15,15 @@ const MessageItem = ({ message, onUpdate }) => {
         </Text>
       </View>
       
-      <TouchableOpacity 
+      <View 
         style={[
           styles.radioButton,
           isRead ? styles.radioButtonReaded : styles.radioButtonUnread
         ]}
-        onPress={handleUpdate}
       >
         {!isRead && <View style={styles.radioButtonInner} />}
-      </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -44,7 +31,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: 10,
-    backgroundColor: '#2E2E2E',
+    backgroundColor: '#111827',
     marginVertical: 5,
     borderRadius: 8,
     minHeight: 60,
@@ -78,7 +65,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   radioButtonUnread: {
-    borderColor: '#A1C014',
+    borderColor: '#19b954',
   },
   radioButtonReaded: {
     borderColor: '#CCCCCC',
@@ -87,7 +74,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#A1C014',
+    backgroundColor: '#19b954',
   },
 });
 

@@ -1,150 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Dimensions, RefreshControl, ActivityIndicator } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+// src/screens/MessageList.js
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Dimensions, RefreshControl, ActivityIndicator, SafeAreaView } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import MessageItem from '../components/MessageItem';
-import { getMessages, markMessageAsRead, getCompanyData } from '../api/api';
-import { getData } from '../services/storage';
+import { getData, saveData } from '../services/storage';
 import { globalStyles } from '../styles/globalStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { on, off } from '../services/EventEmitter';
 
 const { width, height } = Dimensions.get('window');
+const STORAGE_KEY = 'messages';
 
 const MessageList = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState([]);
-  const [page, setPage] = useState(1);
-  const [range, setRange] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [range, setRange] = useState(1); // 1 for Today, 7 for 7 days
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [companyData, setCompanyData] = useState(null);
-  const [companyLoading, setCompanyLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCompanyData = async () => {
-      try {
-        const data = await getCompanyData();
-        setCompanyData(data);
-      } catch (error) {
-        console.error('Erro ao buscar dados da empresa:', error);
-      } finally {
-        setCompanyLoading(false);
-      }
-    };
-
-    fetchCompanyData();
-  }, []);
-
-  const fetchMessages = async (days = 1, newPage = 1) => {
+  const fetchMessages = useCallback(async (days) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const email = await getData('email');
-      if (!email) {
-        console.error('Email não encontrado');
-        navigation.replace('Login01');
-        return;
-      }
+      const storedMessages = await getData(STORAGE_KEY);
+      let allMessages = storedMessages ? JSON.parse(storedMessages) : [];
 
-      const currentDate = new Date();
-      const startDateOffset = days === 1 ? 1 : days;
-      const startDate = new Date(currentDate);
-      startDate.setDate(currentDate.getDate() - startDateOffset);
-      const endDate = new Date(currentDate);
-      endDate.setDate(currentDate.getDate() + 1);
-
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
-
-      console.log('Buscando mensagens:', { email, startDate: startDateStr, endDate: endDateStr, page: newPage });
-      const data = await getMessages(email, startDateStr, endDateStr, newPage);
-
-      if (data) {
-        setMessages(newPage === 1 ? data.messages : [...messages, ...data.messages]);
-        setHasNextPage(data.nextPage || false);
-        if (data.messages.length === 0 && newPage === 1) {
-          console.log('Nenhuma mensagem encontrada para o período');
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar mensagens:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
+      const now = new Date();
+      const filteredMessages = allMessages.filter(msg => {
+        const msgDate = new Date(msg.date);
+        const diffTime = Math.abs(now - msgDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= days;
       });
+
+      setMessages(filteredMessages.reverse()); // Show newest first
+    } catch (error) {
+      console.error('Erro ao carregar mensagens do armazenamento:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchMessages();
-  }, []);
+    const handleNewMessage = () => fetchMessages(range);
+    on('newMessage', handleNewMessage);
+
+    return () => {
+      off('newMessage', handleNewMessage);
+    };
+  }, [range, fetchMessages]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMessages(range);
+    }, [range, fetchMessages])
+  );
 
   const handleRangeChange = (days) => {
     setRange(days);
-    setPage(1);
-    fetchMessages(days, 1);
-  };
-
-  const loadMore = () => {
-    if (!loading && hasNextPage) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchMessages(range, nextPage);
-    }
+    fetchMessages(days);
   };
 
   const handleMessagePress = async (id) => {
     try {
-      await markMessageAsRead(id);
-      setMessages(messages.map((msg) =>
+      const storedMessages = await getData(STORAGE_KEY);
+      let allMessages = storedMessages ? JSON.parse(storedMessages) : [];
+      
+      const updatedMessages = allMessages.map(msg =>
         msg.id === id ? { ...msg, readed: true } : msg
-      ));
+      );
+
+      await saveData(STORAGE_KEY, JSON.stringify(updatedMessages));
+      
+      // Update local state to reflect the change immediately
+      setMessages(prevMessages =>
+        prevMessages.map(msg =>
+          msg.id === id ? { ...msg, readed: true } : msg
+        )
+      );
     } catch (error) {
-      console.error('Erro ao marcar mensagem como lida:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      console.error('Erro ao marcar mensagem como lida:', error);
     }
   };
 
-  const onRefresh = async () => {
+  const onRefresh = () => {
     setRefreshing(true);
-    await fetchMessages(range, 1);
-    setPage(1);
-    setRefreshing(false);
+    fetchMessages(range);
   };
 
-  if (companyLoading) {
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#A1C014" />
+        <ActivityIndicator size="large" color="#19b954" />
       </View>
     );
   }
 
   return (
-    <View style={[globalStyles.container, { backgroundColor: companyData?.primaryColor }]}>
-      <View style={styles.header}>
-        <View style={[styles.iconContainer, { width: width * 0.1, height: width * 0.1, borderColor: companyData?.tertiaryColor }]}>
-          <Ionicons name="notifications" size={width * 0.06} color={companyData?.tertiaryColor} />
+    <SafeAreaView style={[globalStyles.container, { backgroundColor: '#000' }]}>
+      <View style={[styles.header, { marginTop: insets.top }]}>
+        <View style={[styles.iconContainer, { width: width * 0.1, height: width * 0.1, borderColor: '#19b954' }]}>
+          <Icon name="notifications" size={width * 0.06} color={'#19b954'} />
         </View>
         <View style={styles.titleContainer}>
-          <Text style={[styles.title, { fontSize: width * 0.045, color: companyData?.tertiaryColor }]}>Lista de mensagens</Text>
+          <Text style={[styles.title, { fontSize: width * 0.045, color: '#fff' }]}>Lista de mensagens</Text>
         </View>
       </View>
 
       <View style={styles.filterContainer}>
         <TouchableOpacity
-          style={[styles.filter, range === 1 ? styles.activeFilter : null, { borderColor: companyData?.tertiaryColor, backgroundColor: range === 1 ? companyData?.tertiaryColor : companyData?.primaryColor }]}
+          style={[styles.filter, range === 1 ? styles.activeFilter : null, { borderColor: '#19b954', backgroundColor: range === 1 ? '#19b954' : '#000' }]}
           onPress={() => handleRangeChange(1)}
         >
-          <Text style={range === 1 ? [styles.activeFilterText, { color: companyData?.primaryColor }] : [styles.filterText, { color: companyData?.tertiaryColor }]}>Hoje</Text>
+          <Text style={range === 1 ? [styles.activeFilterText, { color: '#000' }] : [styles.filterText, { color: '#fff' }]}>Hoje</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filter, range === 7 ? styles.activeFilter : null, { borderColor: companyData?.tertiaryColor, backgroundColor: range === 7 ? companyData?.tertiaryColor : companyData?.primaryColor }]}
+          style={[styles.filter, range === 7 ? styles.activeFilter : null, { borderColor: '#19b954', backgroundColor: range === 7 ? '#19b954' : '#000' }]}
           onPress={() => handleRangeChange(7)}
         >
-          <Text style={range === 7 ? [styles.activeFilterText, { color: companyData?.primaryColor }] : [styles.filterText, { color: companyData?.tertiaryColor }]}>7 dias</Text>
+          <Text style={range === 7 ? [styles.activeFilterText, { color: '#000' }] : [styles.filterText, { color: '#fff' }]}>7 dias</Text>
         </TouchableOpacity>
       </View>
 
@@ -154,25 +129,14 @@ const MessageList = ({ navigation }) => {
           <MessageItem
             message={item}
             onPress={() => handleMessagePress(item.id)}
-            onUpdate={() => {
-              const updatedMessages = messages.map((msg) =>
-                msg.id === item.id ? { ...msg, readed: true } : msg
-              );
-              setMessages(updatedMessages);
-            }}
           />
         )}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.messageList}
-        ListFooterComponent={
-          hasNextPage ? (
-            <TouchableOpacity
-              onPress={loadMore}
-              style={[styles.loadMoreButton, { backgroundColor: companyData?.secondaryColor, borderColor: companyData?.tertiaryColor }]}
-            >
-              <Text style={[styles.loadMoreButtonText, { color: companyData?.tertiaryColor }]}>Mais...</Text>
-            </TouchableOpacity>
-          ) : null
+        ListEmptyComponent={
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50}}>
+                <Text style={{color: '#fff', fontSize: 16}}>Nenhuma mensagem encontrada.</Text>
+            </View>
         }
         refreshControl={
           <RefreshControl
@@ -183,36 +147,28 @@ const MessageList = ({ navigation }) => {
         }
       />
 
-      <View style={styles.footer}>
-        {companyData && <Image source={{ uri: companyData.image2.replace(/'/g, '') }} style={styles.sublogo} />}
+      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+        <Image source={require('../assets/logo_raspa.png')} style={styles.sublogo} />
         <View style={styles.footerIcons}>
-          <View style={[styles.footerButton, { borderColor: companyData?.secondaryColor }]}>
-            <Ionicons
+          <View style={[styles.footerButton, { borderColor: '#19b954' }]}>
+            <Icon
               name="menu"
               size={width * 0.055}
-              color={companyData?.tertiaryColor}
+              color={'#fff'}
               onPress={() => navigation.navigate('Menu')}
             />
           </View>
-          <View style={[styles.footerButton, { backgroundColor: companyData?.secondaryColor, borderColor: companyData?.secondaryColor }]}>
-            <Ionicons
+          <View style={[styles.footerButton, { backgroundColor: '#19b954', borderColor: '#19b954' }]}>
+            <Icon
               name="notifications"
               size={width * 0.055}
-              color={companyData?.primaryColor}
+              color={'#000'}
               onPress={() => navigation.navigate('MessageList')}
-            />
-          </View>
-          <View style={[styles.footerButton, { borderColor: companyData?.secondaryColor }]}>
-            <Ionicons
-              name="settings"
-              size={width * 0.055}
-              color={companyData?.tertiaryColor}
-              onPress={() => navigation.navigate('Settings')}
             />
           </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -220,12 +176,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: height * 0.06,
-    marginBottom: 0,
+    marginVertical: height * 0.02,
   },
   iconContainer: {
-    backgroundColor: '#2E2E2E',
-    borderColor: '#FFFFFF',
+    backgroundColor: '#111827',
+    borderColor: '#19b954',
     borderWidth: 1,
     borderRadius: 8,
     justifyContent: 'center',
@@ -301,16 +256,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.11,
-    backgroundColor: '#2E2E2E',
+    height: height * 0.10,
+    backgroundColor: '#111827',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: width * 0.025,
   },
   sublogo: {
-    width: width * 0.12,
-    height: height * 0.06,
+    width: width * 0.25,
+    height: height * 0.10,
     resizeMode: 'contain',
   },
   footerIcons: {
@@ -320,9 +275,9 @@ const styles = StyleSheet.create({
   footerButton: {
     width: width * 0.12,
     height: width * 0.12,
-    backgroundColor: '#2E2E2E',
+    backgroundColor: '#111827',
     borderWidth: 1,
-    borderColor: '#A1C014',
+    borderColor: '#19b954',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -331,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#000',
   },
 });
 

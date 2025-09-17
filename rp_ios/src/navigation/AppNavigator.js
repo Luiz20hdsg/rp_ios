@@ -3,7 +3,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login01 from '../screens/Login01';
 import Login02 from '../screens/Login02';
 import MessageList from '../screens/MessageList';
-import Settings from '../screens/Settings';
 import Menu from '../screens/Menu';
 import { getData } from '../services/storage';
 import { View, ActivityIndicator } from 'react-native';
@@ -34,7 +33,6 @@ const AppNavigator = () => {
       <Stack.Screen name="Login01" component={Login01} />
       <Stack.Screen name="Login02" component={Login02} />
       <Stack.Screen name="MessageList" component={MessageList} />
-      <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="Menu" component={Menu} />
     </Stack.Navigator>
   );
