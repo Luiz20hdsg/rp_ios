@@ -1,0 +1,16 @@
+{
+  "name": "PagueX",
+  "displayName": "PagueX",
+  "version": "1.0.0",
+  "icon": "./assets/logo_ios.png",
+  "splash": {
+    "image": "./assets/logo.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#1E1E1E"
+  },
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "com.paguex.app",
+    "buildNumber": "1.1.0"
+  }
+}
