@@ -98,7 +98,7 @@ const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
           {/* Footer Bar */}
           <View style={styles.footerBar}>
             <View style={styles.footerAppInfo}>
-              <Image source={require('../../assets/icon.png')} style={styles.appIcon} />
+              <Image source={require('../assets/icon.png')} style={styles.appIcon} />
               <Text style={styles.appName}>Raspa Premiada</Text>
             </View>
             <TouchableOpacity onPress={onClose} disabled={!isClosable}>
