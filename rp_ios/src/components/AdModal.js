@@ -81,7 +81,7 @@ const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
                 <Text>Video Placeholder</Text> // Placeholder for Video component
               )}
               <TouchableOpacity style={styles.audioIcon} onPress={() => setMuted(!isMuted)}>
-                <Icon name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="#fff" />
+                <Icon name={isMuted ? 'volume-mute' : 'volume-high'} size={24} color="#fff" />
               </TouchableOpacity>
             </View>
 
@@ -103,7 +103,7 @@ const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
             </View>
             <TouchableOpacity onPress={onClose} disabled={!isClosable}>
               <Text style={[styles.closeText, { color: isClosable ? '#19b954' : '#888' }]}>
-                Ir para o App <Icon name="arrow-forward-ios" size={14} />
+                Ir para o App <Icon name="arrow-forward" size={14} />
               </Text>
             </TouchableOpacity>
           </View>

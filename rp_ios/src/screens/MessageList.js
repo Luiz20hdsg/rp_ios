@@ -98,7 +98,7 @@ const MessageList = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={[globalStyles.container, { backgroundColor: '#000' }]}>
+    <SafeAreaView style={[globalStyles.container, { backgroundColor: '#000', padding: 0 }]}>
       <View style={[styles.header, { marginTop: insets.top }]}>
         <View style={[styles.iconContainer, { width: width * 0.1, height: width * 0.1, borderColor: '#19b954' }]}>
           <Icon name="notifications" size={width * 0.06} color={'#19b954'} />
@@ -176,8 +176,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: height * 0.06,
-    marginBottom: 0,
+    marginBottom: height * 0.03,
   },
   iconContainer: {
     backgroundColor: '#111827',
@@ -199,8 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginLeft: width * 0.025,
     gap: width * 0.02,
-    marginTop: height * 0.012,
-    marginBottom: height * 0.018,
+    marginBottom: height * 0.02,
   },
   filter: {
     width: width * 0.2,

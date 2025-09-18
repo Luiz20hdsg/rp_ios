@@ -53,13 +53,23 @@ const Login02 = ({ navigation }) => {
         return;
       }
 
-      const { session, error } = await verifyAuthCode(email, code);
+      // Bloco de código antigo mantido para referência, conforme solicitado.
+      // const { session, error } = await verifyAuthCode(email, code);
 
-      if (error) {
-        Alert.alert('Erro de Autenticação', String(error));
-        setIsSubmitting(false);
-        return;
-      }
+      // if (error) {
+      //   Alert.alert('Erro de Autenticação', String(error));
+      //   setIsSubmitting(false);
+      //   return;
+      // }
+
+      // if (!session) {
+      //   Alert.alert('Erro', 'Código inválido ou expirado. Tente novamente ou solicite um novo código.');
+      //   setIsSubmitting(false);
+      //   return;
+      // }
+
+      // Correção: A função verifyAuthCode retorna a sessão diretamente.
+      const session = await verifyAuthCode(email, code);
 
       if (!session) {
         Alert.alert('Erro', 'Código inválido ou expirado. Tente novamente ou solicite um novo código.');
