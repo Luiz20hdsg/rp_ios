@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { getCompanyData } from '../api/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AdModal from '../components/AdModal';
+import { adService } from '../services/AdService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,8 +24,10 @@ const Menu = ({ navigation }) => {
         console.error('Erro ao buscar dados da empresa:', error);
       } finally {
         setLoading(false);
-        // Show the ad once everything is loaded
-        setAdVisible(true);
+        if (!adService.hasBeenShown) {
+          setAdVisible(true);
+          adService.hasBeenShown = true;
+        }
       }
     };
 
