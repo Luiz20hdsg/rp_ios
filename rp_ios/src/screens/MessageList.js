@@ -1,11 +1,10 @@
 // src/screens/MessageList.js
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Dimensions, RefreshControl, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Dimensions, RefreshControl, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MessageItem from '../components/MessageItem';
 import { getData, saveData } from '../services/storage';
 import { globalStyles } from '../styles/globalStyles';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { on, off } from '../services/EventEmitter';
 
