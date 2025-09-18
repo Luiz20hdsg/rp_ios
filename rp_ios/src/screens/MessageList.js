@@ -33,7 +33,7 @@ const MessageList = ({ navigation }) => {
         return diffDays <= days;
       });
 
-      setMessages(filteredMessages.reverse()); // Show newest first
+      setMessages(filteredMessages.reverse()); // Show newest first, ok 
     } catch (error) {
       console.error('Erro ao carregar mensagens do armazenamento:', error);
     } finally {
