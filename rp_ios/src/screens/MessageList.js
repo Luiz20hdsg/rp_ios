@@ -20,7 +20,6 @@ const MessageList = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchMessages = useCallback(async (days) => {
-    setLoading(true);
     try {
       const storedMessages = await getData(STORAGE_KEY);
       let allMessages = storedMessages ? JSON.parse(storedMessages) : [];
