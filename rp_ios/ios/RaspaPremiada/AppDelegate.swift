@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "PagueX",
+      withModuleName: "RaspaPremiada",
       in: window,
       launchOptions: launchOptions
     )
@@ -36,7 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     OneSignal.Debug.setLogLevel(.LL_VERBOSE)
 
     //Inicialização Nativa. added
-    OneSignal.initialize("46b8e9ae-0621-46c1-a827-c4ee8ec41ba1", withLaunchOptions: launchOptions)
+    OneSignal.initialize("8a665c1f-f02f-4cf1-a06a-aa18cd41ae69", withLaunchOptions: launchOptions)
     // ---- FIM ONESIGNAL ----
 
     return true

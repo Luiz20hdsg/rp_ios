@@ -30,10 +30,11 @@ const MessageItem = ({ message, onPress }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 16, // Aumentado
     backgroundColor: '#111827',
-    marginVertical: 5,
-    borderRadius: 8,
+    marginVertical: 8, // Aumentado
+    marginHorizontal: 16, // Adicionado
+    borderRadius: 12, // Aumentado
     minHeight: 60,
     alignItems: 'flex-start',
   },

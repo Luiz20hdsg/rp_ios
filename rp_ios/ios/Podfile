@@ -12,7 +12,7 @@ prepare_react_native_project!
 # Isto é necessário para que a extensão e o app principal sejam compatíveis.
 use_frameworks!
 
-target 'PagueX' do
+target 'RaspaPremiada' do
   config = use_native_modules!
 
   use_react_native!(

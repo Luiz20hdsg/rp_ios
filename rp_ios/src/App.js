@@ -12,7 +12,7 @@ const App = () => {
   useEffect(() => {
     OneSignal.Debug.setLogLevel(LogLevel.Error);
 
-    OneSignal.initialize('46b8e9ae-0621-46c1-a827-c4ee8ec41ba1');
+    OneSignal.initialize('8a665c1f-f02f-4cf1-a06a-aa18cd41ae69');
 
     OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
       console.log('Notificação recebida em foreground:', event.notification.title);

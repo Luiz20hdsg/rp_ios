@@ -1,16 +1,17 @@
 {
-  "name": "PagueX",
-  "displayName": "PagueX",
-  "version": "1.0.0",
-  "icon": "./assets/logo_ios.png",
-  "splash": {
-    "image": "./assets/logo.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#1E1E1E"
+  "name": "RaspaPremiada",
+  "displayName": "Raspa Premiada",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-xxxxxxxx~xxxxxxxx",
+    "ios_app_id": "ca-app-pub-xxxxxxxx~xxxxxxxx"
   },
-  "ios": {
-    "supportsTablet": true,
-    "bundleIdentifier": "com.paguex.app",
-    "buildNumber": "1.1.0"
+  "expo": {
+    "name": "RaspaPremiada",
+    "slug": "RaspaPremiada",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "bundleIdentifier": "com.raspa.premiada"
   }
 }
