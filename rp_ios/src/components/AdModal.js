@@ -13,24 +13,17 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock data until API is ready
-const MOCK_AD_DATA = {
-  productIcon: { uri: 'https://via.placeholder.com/100x100.png?text=Ad+Icon' },
-  productName: 'Produto Incrível',
-  mediaUrl: 'https://via.placeholder.com/400x300.png?text=Ad+Image',
-  mediaType: 'image', // 'image' or 'video'
-  ctaUrl: 'https://www.google.com',
-};
-
-const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
-  const [countdown, setCountdown] = useState(10);
+const AdModal = ({ isVisible, onClose, adData }) => {
+  const [countdown, setCountdown] = useState(adData?.durationSeconds || 10);
   const [isClosable, setIsClosable] = useState(false);
   const [isMuted, setMuted] = useState(false);
 
   useEffect(() => {
-    if (isVisible) {
-      setCountdown(10);
+    if (isVisible && adData) {
+      const duration = adData.durationSeconds || 10;
+      setCountdown(duration);
       setIsClosable(false);
+      
       const timer = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
@@ -44,15 +37,22 @@ const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
 
       return () => clearInterval(timer);
     } 
-  }, [isVisible]);
+  }, [isVisible, adData]);
 
   const handleObterPress = () => {
-    Linking.openURL(adData.ctaUrl).catch(err => console.error("Couldn't load page", err));
+    if (adData?.ctaButton?.link) {
+      Linking.openURL(adData.ctaButton.link).catch(err => console.error("Couldn't load page", err));
+    }
   };
 
   const timerWidth = useMemo(() => {
-    return `${(countdown / 10) * 100}%`;
-  }, [countdown]);
+    const duration = adData?.durationSeconds || 10;
+    return `${(countdown / duration) * 100}%`;
+  }, [countdown, adData]);
+
+  if (!adData) {
+    return null; // Do not render if there is no ad data
+  }
 
   return (
     <Modal
@@ -70,23 +70,25 @@ const AdModal = ({ isVisible, onClose, adData = MOCK_AD_DATA }) => {
             </View>
 
             <View style={styles.productHeader}>
-              <Image source={adData.productIcon} style={styles.productIcon} />
-              <Text style={styles.productName}>{adData.productName}</Text>
+              <Text style={styles.productName}>{adData.title}</Text>
             </View>
+            <Text style={styles.bodyText}>{adData.bodyText}</Text>
 
             <View style={styles.mediaContainer}>
               {adData.mediaType === 'image' ? (
                 <Image source={{ uri: adData.mediaUrl }} style={styles.media} />
               ) : (
-                <Text>Video Placeholder</Text> // Placeholder for Video component
+                <Text style={{color: 'white'}}>Video Placeholder for {adData.mediaUrl}</Text> // Placeholder for Video component
               )}
-              <TouchableOpacity style={styles.audioIcon} onPress={() => setMuted(!isMuted)}>
-                <Icon name={isMuted ? 'volume-mute' : 'volume-high'} size={24} color="#fff" />
-              </TouchableOpacity>
+              {adData.audioUrl && (
+                <TouchableOpacity style={styles.audioIcon} onPress={() => setMuted(!isMuted)}>
+                  <Icon name={isMuted ? 'volume-mute' : 'volume-high'} size={24} color="#fff" />
+                </TouchableOpacity>
+              )}
             </View>
 
             <TouchableOpacity style={styles.ctaButton} onPress={handleObterPress}>
-              <Text style={styles.ctaButtonText}>Obter</Text>
+              <Text style={styles.ctaButtonText}>{adData.ctaButton?.text || 'Obter'}</Text>
             </TouchableOpacity>
           </View>
 

@@ -14,24 +14,33 @@ const Menu = ({ navigation }) => {
   const [companyData, setCompanyData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdVisible, setAdVisible] = useState(false);
+  const [adApiData, setAdApiData] = useState(null); // State for API ad data
 
   useEffect(() => {
-    const fetchCompanyData = async () => {
+    const initializeScreen = async () => {
       try {
-        const data = await getCompanyData();
-        setCompanyData(data);
-      } catch (error) {
-        console.error('Erro ao buscar dados da empresa:', error);
-      } finally {
-        setLoading(false);
-        if (!adService.hasBeenShown) {
+        // Fetch company data and ad data in parallel
+        const [companyDataResponse, adDataResponse] = await Promise.all([
+          getCompanyData(),
+          adService.fetchCurrentAd()
+        ]);
+
+        setCompanyData(companyDataResponse);
+        
+        if (adDataResponse && !adService.hasBeenShown) {
+          setAdApiData(adDataResponse);
           setAdVisible(true);
           adService.hasBeenShown = true;
         }
+
+      } catch (error) {
+        console.error('Erro ao inicializar a tela de Menu:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCompanyData();
+    initializeScreen();
   }, []);
 
   if (loading) {
@@ -76,7 +85,14 @@ const Menu = ({ navigation }) => {
           </View>
         </View>
       </View>
-      <AdModal isVisible={isAdVisible} onClose={() => setAdVisible(false)} />
+      
+      {adApiData && (
+        <AdModal 
+          isVisible={isAdVisible} 
+          onClose={() => setAdVisible(false)} 
+          adData={adApiData} 
+        />
+      )}
     </SafeAreaView>
   );
 };

@@ -9,11 +9,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 console.log('DEBUG: Valor da SUPABASE_URL =', SUPABASE_URL);
 console.log('DEBUG: Valor da SUPABASE_URL =', SUPABASE_ANON_KEY);
 
-//const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-//added
-
-// Create a single supabase client for interacting with your database
-const supabase = createClient('https://fpyxdxuceinuvagmovsg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZweXhkeHVjZWludXZhZ21vdnNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQwNzQ3MjgsImV4cCI6MjA1OTY1MDcyOH0.HeXThSqm2BMc7PBc56nARIGTjfGY68v9Z54IMCPJmtE')
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 console.log('DEBUG2: Valor da SUPABASE_URL =', SUPABASE_URL);
 console.log('DEBUG: Valor da SUPABASE_URL =', SUPABASE_ANON_KEY);
