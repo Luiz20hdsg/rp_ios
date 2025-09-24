@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { verifyAuthCode } from '../services/auth';
@@ -17,6 +17,7 @@ const Login02 = ({ navigation }) => {
   const handleVerify = useCallback(async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    Keyboard.dismiss(); // Garante que o teclado feche ao submeter
 
     try {
       const email = await getData('email');
@@ -53,22 +54,6 @@ const Login02 = ({ navigation }) => {
         return;
       }
 
-      // Bloco de código antigo mantido para referência, conforme solicitado.
-      // const { session, error } = await verifyAuthCode(email, code);
-
-      // if (error) {
-      //   Alert.alert('Erro de Autenticação', String(error));
-      //   setIsSubmitting(false);
-      //   return;
-      // }
-
-      // if (!session) {
-      //   Alert.alert('Erro', 'Código inválido ou expirado. Tente novamente ou solicite um novo código.');
-      //   setIsSubmitting(false);
-      //   return;
-      // }
-
-      // Correção: A função verifyAuthCode retorna a sessão diretamente.
       const session = await verifyAuthCode(email, code);
 
       if (!session) {
@@ -108,32 +93,37 @@ const Login02 = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       enabled
     >
-      <View style={styles.content}>
-        <Image source={require('../assets/baner_raspa.png')} style={styles.logo} />
-        <Text style={styles.text}>Informe o código recebido por e-mail</Text>
-        <View style={styles.inputContainer}>
-          <Input
-            value={code}
-            onChangeText={setCode}
-            placeholder="Código"
-            keyboardType="numeric"
-            style={styles.input}
-            autoFocus={true}
-          />
-          <Button
-            title={"Validar o código"}
-            onPress={handleVerify}
-            style={styles.button}
-            textStyle={styles.buttonText}
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <ActivityIndicator size="small" color="#000" />}
-          </Button>
-        </View>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView 
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Image source={require('../assets/baner_raspa.png')} style={styles.logo} />
+          <Text style={styles.text}>Informe o código recebido por e-mail</Text>
+          <View style={styles.inputContainer}>
+            <Input
+              value={code}
+              onChangeText={setCode}
+              placeholder="Código"
+              keyboardType="numeric"
+              style={styles.input}
+              autoFocus={true}
+            />
+            <Button
+              title={"Validar o código"}
+              onPress={handleVerify}
+              style={styles.button}
+              textStyle={styles.buttonText}
+              disabled={isSubmitting}
+            >
+              {isSubmitting && <ActivityIndicator size="small" color="#000" />}
+            </Button>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
@@ -144,7 +134,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#1E1E1E',
     },
     content: {
-      flex: 1,
+      flexGrow: 1, // Alterado de flex: 1 para flexGrow: 1 para funcionar com ScrollView
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
