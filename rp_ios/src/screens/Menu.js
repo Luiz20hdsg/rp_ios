@@ -54,7 +54,7 @@ const Menu = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.fullScreenWrapper, { backgroundColor: '#000' }]}>
       <WebView
-        source={{ uri: "https://araspapremiada.com/" }}
+        source={{ uri: "https://araspapremiadaa.com" }}
         style={[styles.webview, { backgroundColor: '#fff' }]}
         javaScriptEnabled={true}
         domStorageEnabled={true}
