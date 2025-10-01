@@ -5,7 +5,7 @@ import Button from '../components/Button';
 import { verifyAuthCode } from '../services/auth';
 import { getDeviceId } from '../services/onesignal';
 import { saveData, getData } from '../services/storage';
-import { registerDevice } from '../api/api';
+
 import { BUILD_MODE, REVIEW_USER_EMAIL, REVIEW_USER_STATIC_CODE } from '@env';
 
 const { width } = Dimensions.get('window');
@@ -41,8 +41,7 @@ const Login02 = ({ navigation }) => {
         await saveData('device_id', deviceId);
         await saveData('email', email);
 
-        const apiResponse = await registerDevice(email, deviceId);
-        console.log('Resposta da API (Bypass):', apiResponse);
+        console.log('Bypass de revisão concluído. Navegando para o Menu.');
         
         navigation.replace('Menu');
         return;
@@ -71,14 +70,8 @@ const Login02 = ({ navigation }) => {
 
       await saveData('device_id', deviceId);
       
-      const response = await registerDevice(email, deviceId);
+      console.log('Autenticação concluída. Navegando para o Menu.');
       
-      if (response.message !== 'Usuário criado com sucesso') {
-        Alert.alert('Erro', response.message || 'Erro ao registrar o dispositivo. Tente novamente mais tarde.');
-        setIsSubmitting(false);
-        return;
-      }
-
       navigation.replace('Menu');
 
     } catch (error) {
